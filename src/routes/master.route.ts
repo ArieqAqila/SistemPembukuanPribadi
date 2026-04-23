@@ -15,8 +15,14 @@ export const masterRoutes = (app: Elysia) =>
                 .get("/tipe-kantong", () => tipeKantongService.getAll())
                 .get("/metode-bayar", () => metodeBayarService.getAll())
                 
-                .group("", { isProtected: true }, (protectedGroup) => 
-                    protectedGroup
+                .group("", (group) => 
+                    group
+                        .onBeforeHandle(({ user, set }) => {
+                            if (!user) {
+                                set.status = 401;
+                                return { success: false, message: "Unauthorized" };
+                            }
+                        })
                         .post("/tipe-transaksi", ({ body: { nama } }) => tipeTransaksiService.create(nama), { body: t.Object({ nama: t.String() }) })
                         .put("/tipe-transaksi/:id", ({ params: { id }, body: { nama } }) => tipeTransaksiService.update(id, nama), { body: t.Object({ nama: t.String() }) })
                         .delete("/tipe-transaksi/:id", ({ params: { id } }) => tipeTransaksiService.delete(id))

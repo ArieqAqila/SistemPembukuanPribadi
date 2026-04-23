@@ -8,8 +8,14 @@ const produkService = new ProdukService();
 export const productRoutes = (app: Elysia) =>
     app
         .use(authMiddleware)
-        .group("/produk", { isProtected: true }, (group) =>
+        .group("/produk", (group) =>
             group
+                .onBeforeHandle(({ user, set }) => {
+                    if (!user) {
+                        set.status = 401;
+                        return { success: false, message: "Unauthorized" };
+                    }
+                })
                 .get("/", ({ user }) => produkService.getByUserId((user as TokenPayload).userId))
                 .get("/:id", async ({ params: { id }, user, set }) => {
                     const result = await produkService.getById(id);

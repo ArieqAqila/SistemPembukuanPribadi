@@ -8,8 +8,14 @@ const kantongService = new KantongService();
 export const kantongRoutes = (app: Elysia) =>
     app
         .use(authMiddleware)
-        .group('/kantong', { isProtected: true }, (group) =>
+        .group('/kantong', (group) =>
             group
+                .onBeforeHandle(({ user, set }) => {
+                    if (!user) {
+                        set.status = 401;
+                        return { success: false, message: 'Unauthorized' };
+                    }
+                })
                 .get('/', async ({ user }) => {
                     return await kantongService.getByUserId((user as TokenPayload).userId);
                 })

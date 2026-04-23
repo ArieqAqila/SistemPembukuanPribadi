@@ -8,8 +8,14 @@ const userService = new UserService();
 export const userRoutes = (app: Elysia) =>
     app
         .use(authMiddleware)
-        .group("/users", { isProtected: true }, (group) =>
+        .group("/users", (group) =>
             group
+                .onBeforeHandle(({ user, set }) => {
+                    if (!user) {
+                        set.status = 401;
+                        return { success: false, message: "Unauthorized" };
+                    }
+                })
                 .get("/", () => userService.getAll())
                 .get("/:id", ({ params: { id }, user, set }) => {
                     if ((user as TokenPayload).userId !== id) {
