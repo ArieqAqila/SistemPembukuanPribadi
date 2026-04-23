@@ -7,6 +7,10 @@ export class ProdukService {
         return await db.select().from(produk).where(isNull(produk.deletedAt));
     }
 
+    async getByUserId(userId: string) {
+        return await db.select().from(produk).where(and(eq(produk.userId, userId), isNull(produk.deletedAt)));
+    }
+
     async getById(id: string) {
         const result = await db.select().from(produk).where(and(eq(produk.id, id), isNull(produk.deletedAt)));
         return result[0];

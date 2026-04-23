@@ -1,23 +1,41 @@
 import { Elysia, t } from "elysia";
 import { UserService } from "../services/user.service";
+import { authMiddleware } from "../middlewares/auth.middleware";
+import type { TokenPayload } from "../utils/jwt.util";
 
 const userService = new UserService();
 
-export const userRoutes = new Elysia({ prefix: "/users" })
-    .get("/", () => userService.getAll())
-    .get("/:id", ({ params: { id } }) => userService.getById(id))
-    .post("/", ({ body }) => userService.create(body), {
-        body: t.Object({
-            fullname: t.String(),
-            username: t.String(),
-            password: t.String(),
-        })
-    })
-    .put("/:id", ({ params: { id }, body }) => userService.update(id, body), {
-        body: t.Partial(t.Object({
-            fullname: t.String(),
-            username: t.String(),
-            password: t.String(),
-        }))
-    })
-    .delete("/:id", ({ params: { id } }) => userService.delete(id));
+export const userRoutes = (app: Elysia) =>
+    app
+        .use(authMiddleware)
+        .group("/users", { isProtected: true }, (group) =>
+            group
+                .get("/", () => userService.getAll())
+                .get("/:id", ({ params: { id }, user, set }) => {
+                    if ((user as TokenPayload).userId !== id) {
+                        set.status = 403;
+                        return { success: false, message: "Forbidden" };
+                    }
+                    return userService.getById(id);
+                })
+                .put("/:id", ({ params: { id }, body, user, set }) => {
+                    if ((user as TokenPayload).userId !== id) {
+                        set.status = 403;
+                        return { success: false, message: "Forbidden" };
+                    }
+                    return userService.update(id, body);
+                }, {
+                    body: t.Partial(t.Object({
+                        fullname: t.String(),
+                        username: t.String(),
+                        password: t.String(),
+                    }))
+                })
+                .delete("/:id", ({ params: { id }, user, set }) => {
+                    if ((user as TokenPayload).userId !== id) {
+                        set.status = 403;
+                        return { success: false, message: "Forbidden" };
+                    }
+                    return userService.delete(id);
+                })
+        );

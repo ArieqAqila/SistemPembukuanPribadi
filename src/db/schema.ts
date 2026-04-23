@@ -1,14 +1,24 @@
-import { pgTable, uuid, varchar, timestamp, decimal, integer, uniqueIndex, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, decimal, integer, uniqueIndex, unique, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   fullname: varchar('fullname', { length: 255 }).notNull(),
   username: varchar('username', { length: 255 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).unique(),
   password: varchar('password', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'),
+});
+
+export const refreshTokens = pgTable('refresh_tokens', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  token: varchar('token', { length: 500 }).notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  revokedAt: timestamp('revoked_at'),
 });
 
 export const tipeTransaksi = pgTable('tipe_transaksi', {
@@ -41,6 +51,7 @@ export const kantong = pgTable('kantong', {
   userId: uuid('user_id').references(() => users.id).notNull(),
   tipeKantongId: uuid('tipe_kantong_id').references(() => tipeKantong.id).notNull(),
   saldoAwal: decimal('saldo_awal', { precision: 15, scale: 2 }).notNull(),
+  isDefault: boolean('is_default').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   deletedAt: timestamp('deleted_at'),
