@@ -1,7 +1,8 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { UserService } from "../services/user.service";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import type { TokenPayload } from "../utils/jwt.util";
+import { updateUserSchema } from "../validations/user.validation";
 
 const userService = new UserService();
 
@@ -24,18 +25,27 @@ export const userRoutes = (app: Elysia) =>
                     }
                     return userService.getById(id);
                 })
-                .put("/:id", ({ params: { id }, body, user, set }) => {
+                .put("/:id", async ({ params: { id }, body, user, set }) => {
                     if ((user as TokenPayload).userId !== id) {
                         set.status = 403;
                         return { success: false, message: "Forbidden" };
                     }
-                    return userService.update(id, body);
+                    try {
+                        const updatedUser = await userService.update(id, body);
+                        return {
+                            success: true,
+                            message: "User updated successfully",
+                            data: updatedUser
+                        };
+                    } catch (error: any) {
+                        set.status = (error.message === 'Username already exists' || error.message === 'Email already exists') ? 409 : 400;
+                        return {
+                            success: false,
+                            message: error.message
+                        };
+                    }
                 }, {
-                    body: t.Partial(t.Object({
-                        fullname: t.String(),
-                        username: t.String(),
-                        password: t.String(),
-                    }))
+                    body: updateUserSchema
                 })
                 .delete("/:id", ({ params: { id }, user, set }) => {
                     if ((user as TokenPayload).userId !== id) {

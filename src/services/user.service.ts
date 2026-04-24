@@ -23,6 +23,34 @@ export class UserService {
     }
 
     async update(id: string, data: any) {
+        if (data.username) {
+            const [existing] = await db.select().from(users).where(
+                and(
+                    eq(users.username, data.username),
+                    isNull(users.deletedAt)
+                )
+            );
+            if (existing && existing.id !== id) {
+                throw new Error("Username already exists");
+            }
+        }
+
+        if (data.email) {
+            const [existing] = await db.select().from(users).where(
+                and(
+                    eq(users.email, data.email),
+                    isNull(users.deletedAt)
+                )
+            );
+            if (existing && existing.id !== id) {
+                throw new Error("Email already exists");
+            }
+        }
+
+        if (data.password) {
+            data.password = await Bun.password.hash(data.password);
+        }
+
         const result = await db.update(users)
             .set({
                 ...data,

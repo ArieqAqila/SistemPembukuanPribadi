@@ -16,6 +16,11 @@ export class KantongService {
         return result[0];
     }
 
+    async getMainPocket(userId: string) {
+        const result = await db.select().from(kantong).where(and(eq(kantong.userId, userId), eq(kantong.isDefault, true), isNull(kantong.deletedAt)));
+        return result[0];
+    }
+
     async create(data: { userId: string, tipeKantongId: string, nama: string, saldoAwal: string, isDefault?: boolean }) {
         const [pocketCount] = await db.select({ value: count() }).from(kantong).where(and(eq(kantong.userId, data.userId), isNull(kantong.deletedAt)));
         if (!pocketCount || pocketCount.value >= 20) {

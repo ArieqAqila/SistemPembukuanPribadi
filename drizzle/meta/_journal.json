@@ -22,6 +22,27 @@
       "when": 1776959188140,
       "tag": "0002_nasty_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777041594468,
+      "tag": "0003_chubby_raza",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777042186207,
+      "tag": "0004_special_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777044887385,
+      "tag": "0005_minor_meltdown",
+      "breakpoints": true
     }
   ]
 }

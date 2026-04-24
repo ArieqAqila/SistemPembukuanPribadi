@@ -5,9 +5,24 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt.util";
 
 export class AuthService {
     async register(data: any) {
-        const existingUser = await db.select().from(users).where(and(eq(users.username, data.username), isNull(users.deletedAt)));
+        const existingUser = await db.select().from(users).where(
+            and(
+                eq(users.username, data.username), 
+                isNull(users.deletedAt)
+            )
+        );
         if (existingUser.length > 0) {
             throw new Error("Username already exists");
+        }
+
+        const existingEmail = await db.select().from(users).where(
+            and(
+                eq(users.email, data.email), 
+                isNull(users.deletedAt)
+            )
+        );
+        if (existingEmail.length > 0) {
+            throw new Error("Email already exists");
         }
 
         const hashedPassword = await Bun.password.hash(data.password);

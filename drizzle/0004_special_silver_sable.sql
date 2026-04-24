@@ -1,0 +1,1 @@
+ALTER TABLE "transaksi" DROP COLUMN "deleted_at";

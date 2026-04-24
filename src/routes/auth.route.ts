@@ -1,5 +1,6 @@
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { AuthService } from '../services/auth.service';
+import { loginSchema, logoutSchema, refreshSchema, registerSchema } from '../validations/auth.validation';
 
 const authService = new AuthService();
 
@@ -16,19 +17,14 @@ export const authRoutes = (app: Elysia) =>
                         data: user
                     };
                 } catch (error: any) {
-                    set.status = error.message === 'Username already exists' ? 409 : 400;
+                    set.status = (error.message === 'Username already exists' || error.message === 'Email already exists') ? 409 : 400;
                     return {
                         success: false,
                         message: error.message
                     };
                 }
             }, {
-                body: t.Object({
-                    fullname: t.String({ minLength: 3 }),
-                    username: t.String({ minLength: 3 }),
-                    email: t.Optional(t.String({ format: 'email' })),
-                    password: t.String({ minLength: 8 })
-                })
+                body: registerSchema
             })
             .post('/login', async ({ body, set }) => {
                 try {
@@ -46,10 +42,7 @@ export const authRoutes = (app: Elysia) =>
                     };
                 }
             }, {
-                body: t.Object({
-                    username: t.String(),
-                    password: t.String()
-                })
+                body: loginSchema
             })
             .post('/refresh', async ({ body, set }) => {
                 try {
@@ -67,9 +60,7 @@ export const authRoutes = (app: Elysia) =>
                     };
                 }
             }, {
-                body: t.Object({
-                    refreshToken: t.String()
-                })
+                body: refreshSchema
             })
             .post('/logout', async ({ body, set }) => {
                 try {
@@ -86,9 +77,7 @@ export const authRoutes = (app: Elysia) =>
                     };
                 }
             }, {
-                body: t.Object({
-                    refreshToken: t.String()
-                })
+                body: logoutSchema
             })
             .onError(({ code, error, set }) => {
                 if (code === 'VALIDATION') {
