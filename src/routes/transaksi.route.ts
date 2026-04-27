@@ -30,7 +30,8 @@ export const transaksiRoutes = (app: Elysia) =>
                     return await transaksiService.transfer({
                         ...body,
                         userId: (user as TokenPayload).userId,
-                        tanggal: new Date(body.tanggal)
+                        tanggal: new Date(body.tanggal),
+                        categoryId: body.category_id
                     });
                 }, {
                     body: transferSchema
@@ -39,7 +40,8 @@ export const transaksiRoutes = (app: Elysia) =>
                     return await transaksiService.record({
                         ...body,
                         userId: (user as TokenPayload).userId,
-                        tanggal: new Date(body.tanggal)
+                        tanggal: new Date(body.tanggal),
+                        categoryId: body.category_id
                     });
                 }, {
                     body: recordSchema

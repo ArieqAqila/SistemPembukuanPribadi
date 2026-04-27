@@ -43,6 +43,13 @@
       "when": 1777044887385,
       "tag": "0005_minor_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777269026165,
+      "tag": "0006_flat_firelord",
+      "breakpoints": true
     }
   ]
 }

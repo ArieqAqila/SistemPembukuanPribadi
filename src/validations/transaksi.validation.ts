@@ -15,7 +15,8 @@ export const transferSchema = t.Object({
     nominal: t.String({ pattern: "^[0-9]+(\\.[0-9]{1,2})?$", error: "Invalid nominal format" }),
     title: t.String({ minLength: 3, maxLength: 255 }),
     deskripsi: t.String({ maxLength: 500 }),
-    tanggal: t.String({ error: "Invalid date format" })
+    tanggal: t.String({ error: "Invalid date format" }),
+    category_id: t.Optional(t.String({ format: "uuid", error: "Invalid category ID format" }))
 });
 
 export const recordSchema = t.Object({
@@ -25,7 +26,8 @@ export const recordSchema = t.Object({
     title: t.String({ minLength: 3, maxLength: 255 }),
     deskripsi: t.String({ maxLength: 500 }),
     metodeBayarId: t.String({ format: "uuid", error: "Invalid payment method ID format" }),
-    tanggal: t.String({ error: "Invalid date format" })
+    tanggal: t.String({ error: "Invalid date format" }),
+    category_id: t.Optional(t.String({ format: "uuid", error: "Invalid category ID format" }))
 });
 
 export const historySchema = t.Object({

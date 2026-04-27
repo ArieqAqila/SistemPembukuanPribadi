@@ -81,6 +81,18 @@ export const penjualan = pgTable('penjualan', {
   deletedAt: timestamp('deleted_at'),
 });
 
+export const kategori = pgTable('kategori', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid('user_id').references(() => users.id),
+  nama: varchar('nama', { length: 255 }).notNull(),
+  isDefault: boolean('is_default').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+}, (table) => ({
+  unq: unique().on(table.userId, table.nama),
+}));
+
 export const transaksi = pgTable('transaksi', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid('user_id').references(() => users.id).notNull(),
@@ -91,6 +103,7 @@ export const transaksi = pgTable('transaksi', {
   deskripsi: varchar('deskripsi', { length: 500 }).notNull(),
   nominal: decimal('nominal', { precision: 15, scale: 2 }).notNull(),
   metodeBayarId: uuid('metode_bayar_id').references(() => metodeBayar.id),
+  kategoriId: uuid('kategori_id').references(() => kategori.id),
   tanggal: timestamp('tanggal').notNull(),
   refType: varchar('ref_type', { length: 50 }),
   refId: uuid('ref_id'),

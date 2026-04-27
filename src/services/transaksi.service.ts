@@ -1,9 +1,11 @@
 import { db } from "../db";
-import { transaksi, kantong, tipeTransaksi } from "../db/schema";
+import { transaksi, kantong, tipeTransaksi, kategori } from "../db/schema";
 import { eq, and, isNull, sql, desc, lte } from "drizzle-orm";
 import { TIPE_TRANSAKSI } from "../utils/constants";
+import { KategoriService } from "./kategori.service";
 
 export class TransaksiService {
+    private kategoriService = new KategoriService();
     private async getTipeId(nama: string) {
         const [result] = await db.select().from(tipeTransaksi).where(and(eq(tipeTransaksi.nama, nama), isNull(tipeTransaksi.deletedAt)));
         if (!result) throw new Error(`Transaction type ${nama} not found`);
@@ -57,8 +59,13 @@ export class TransaksiService {
         return { ...result, balance_after: balanceAfter };
     }
 
-    async transfer(data: { userId: string, kantongId: string, kantongTujuanId: string, nominal: string, title: string, deskripsi: string, tanggal: Date }) {
+    async transfer(data: { userId: string, kantongId: string, kantongTujuanId: string, nominal: string, title: string, deskripsi: string, tanggal: Date, categoryId?: string }) {
         if (parseFloat(data.nominal) <= 0) throw new Error("Amount must be greater than 0");
+        
+        if (data.categoryId) {
+            await this.kategoriService.validateCategoryOwnership(data.userId, data.categoryId);
+        }
+
         const tipeId = await this.getTipeId(TIPE_TRANSAKSI.TRANSFER);
         
         // Validate balance and ownership
@@ -73,6 +80,7 @@ export class TransaksiService {
         const [result] = await db.insert(transaksi).values({
             ...data,
             tipeTransaksiId: tipeId,
+            kategoriId: data.categoryId ?? null,
         }).returning();
 
         const balanceAfterSource = await this.calculateBalanceAfter(data.kantongId, data.tanggal, data.userId);
@@ -85,8 +93,13 @@ export class TransaksiService {
         };
     }
 
-    async record(data: { userId: string, type: 'INCOME' | 'EXPENSE', kantongId?: string, nominal: string, title: string, deskripsi: string, metodeBayarId: string, tanggal: Date }) {
+    async record(data: { userId: string, type: 'INCOME' | 'EXPENSE', kantongId?: string, nominal: string, title: string, deskripsi: string, metodeBayarId: string, tanggal: Date, categoryId?: string }) {
         if (parseFloat(data.nominal) <= 0) throw new Error("Amount must be greater than 0");
+
+        if (data.categoryId) {
+            await this.kategoriService.validateCategoryOwnership(data.userId, data.categoryId);
+        }
+
         const tipeId = await this.getTipeId(data.type);
         
         let targetKantongId = data.kantongId;
@@ -114,6 +127,7 @@ export class TransaksiService {
             deskripsi: data.deskripsi,
             nominal: data.nominal,
             metodeBayarId: data.metodeBayarId,
+            kategoriId: data.categoryId ?? null,
             tanggal: data.tanggal
         }).returning();
 

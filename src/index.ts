@@ -6,6 +6,7 @@ import { productRoutes } from "./routes/product-pocket.route";
 import { authRoutes } from "./routes/auth.route";
 import { kantongRoutes } from "./routes/kantong.route";
 import { transaksiRoutes } from "./routes/transaksi.route";
+import { kategoriRoutes } from "./routes/kategori.route";
 
 const app = new Elysia()
     .use(swagger())
@@ -21,6 +22,7 @@ const app = new Elysia()
         .use(productRoutes)
         .use(kantongRoutes)
         .use(transaksiRoutes)
+        .use(kategoriRoutes)
     )
     .get("/health", async () => {
         return { status: "ok", uptime: process.uptime() };
